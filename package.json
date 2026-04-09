@@ -1,0 +1,84 @@
+{
+  "name": "devscape-vscode-theme",
+  "publisher": "J8118",
+  "displayName": "Devscape",
+  "description": "Immersive VS Code themes with animated backgrounds, live weather & ambient music detection",
+  "version": "1.0.0",
+  "engines": {
+    "vscode": "^1.70.0"
+  },
+  "categories": [
+    "Themes"
+  ],
+  "keywords": [
+    "theme",
+    "dark",
+    "background",
+    "spotify",
+    "weather",
+    "dashboard",
+    "custom-ui",
+    "immersive",
+    "devscape"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/J8118/devscape-vscode-theme"
+  },
+  "license": "MIT",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "themes": [
+      {
+        "label": "Arctic Sands",
+        "uiTheme": "vs-dark",
+        "path": "./themes/arctic-sands.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "devscape.apply",
+        "title": "Devscape: Apply Background & UI"
+      },
+      {
+        "command": "devscape.remove",
+        "title": "Devscape: Remove Background & UI"
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "type": "webview",
+          "id": "devscape.dashboardView",
+          "name": "Dashboard",
+          "when": "config.devscape.dashboardEnabled"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Devscape",
+      "properties": {
+        "devscape.weatherCity": {
+          "type": "string",
+          "default": "",
+          "description": "City for weather display. Leave empty to auto-detect via IP."
+        },
+        "devscape.dashboardEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the Dashboard panel in the Explorer sidebar."
+        },
+        "devscape.backgroundOpacity": {
+          "type": "number",
+          "default": 0.13,
+          "minimum": 0,
+          "maximum": 0.5,
+          "description": "Opacity of the background image in the editor (0 = invisible, 0.5 = very visible)."
+        }
+      }
+    }
+  }
+}

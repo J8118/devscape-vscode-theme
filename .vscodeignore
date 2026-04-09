@@ -1,0 +1,10 @@
+scripts/
+docs/
+.github/
+.claude/
+.gitignore
+.vscodeignore
+CONTRIBUTING.md
+*.py
+*_test_inject*
+debug_snippet*
