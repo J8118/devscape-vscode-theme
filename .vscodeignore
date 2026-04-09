@@ -1,5 +1,6 @@
 scripts/
 docs/
+media/preview/
 .github/
 .claude/
 .gitignore
