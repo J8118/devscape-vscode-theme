@@ -4,7 +4,7 @@ Immersive VS Code themes with animated backgrounds, live weather, and ambient mu
 
 Devscape goes beyond colors — it transforms your entire editor with custom UI styling, a background image in your editor, and a live dashboard showing the date, weather, and what you're listening to.
 
-![Arctic Sands Preview](media/preview/Artic-Sands-Ex.png)
+![Arctic Sands Preview](media/preview/Arctic-Sands-Ex.gif)
 
 ## Features
 
