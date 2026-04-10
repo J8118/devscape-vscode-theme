@@ -25,18 +25,23 @@ Write-Host "  [1/5] Cleaning VS Code workbench files..." -ForegroundColor Yellow
 
 $codePath = "$env:LOCALAPPDATA\Programs\Microsoft VS Code\resources\app\out\vs\workbench"
 $cleaned = $false
+$codePath = $null
 
-# Try alternate paths if default doesn't exist
-$altPaths = @(
-    "$env:LOCALAPPDATA\Programs\Microsoft VS Code\resources\app\out\vs\workbench",
-    "$env:ProgramFiles\Microsoft VS Code\resources\app\out\vs\workbench",
-    "${env:ProgramFiles(x86)}\Microsoft VS Code\resources\app\out\vs\workbench"
+# Search for workbench files — VS Code uses a version hash folder (e.g. 41dd792b5e/)
+$vscodeBases = @(
+    "$env:LOCALAPPDATA\Programs\Microsoft VS Code",
+    "$env:ProgramFiles\Microsoft VS Code",
+    "${env:ProgramFiles(x86)}\Microsoft VS Code"
 )
 
-foreach ($tryPath in $altPaths) {
-    if (Test-Path (Join-Path $tryPath "workbench.desktop.main.css")) {
-        $codePath = $tryPath
-        break
+foreach ($base in $vscodeBases) {
+    if (Test-Path $base) {
+        # Search recursively for the workbench CSS file
+        $found = Get-ChildItem $base -Recurse -Filter "workbench.desktop.main.css" -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($found) {
+            $codePath = $found.DirectoryName
+            break
+        }
     }
 }
 
