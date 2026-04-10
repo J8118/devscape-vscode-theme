@@ -48,7 +48,7 @@ Write-Host "  [OK] Package created" -ForegroundColor Green
 
 # Step 5: Install
 Write-Host "  Installing extension..." -ForegroundColor Yellow
-& code --install-extension devscape-vscode-theme.vsix 2>&1 | Out-Null
+& code.cmd --install-extension devscape-vscode-theme.vsix --force 2>&1 | Out-Null
 Write-Host "  [OK] Extension installed" -ForegroundColor Green
 
 # Step 6: Cleanup
@@ -64,6 +64,6 @@ Write-Host "    1. Open VS Code"
 Write-Host "    2. Ctrl+K Ctrl+T -> select 'Arctic Sands'"
 Write-Host "    3. Ctrl+Shift+P -> 'Devscape: Apply Background & UI'"
 Write-Host ""
-Write-Host "  NOTE: VS Code must be run as Administrator for" -ForegroundColor Yellow
-Write-Host "  background injection to work." -ForegroundColor Yellow
+Write-Host "  To uninstall, run: .\scripts\uninstall.ps1" -ForegroundColor Yellow
+Write-Host "  Do NOT uninstall through VS Code's Extensions panel." -ForegroundColor Yellow
 Write-Host ""

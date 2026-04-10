@@ -18,10 +18,10 @@ function buildCss(config) {
 /* ── Activity Bar ── */
 .activitybar { border-right: 1px solid ${borderColor} !important; }
 .activitybar .active-item-indicator { display: none !important; }
-.activitybar .monaco-action-bar .action-item { margin: 3px 7px !important; border-radius: 10px !important; transition: background 0.2s ease !important; }
-.activitybar .monaco-action-bar .action-item > a.action-label { border-radius: 10px !important; width: 36px !important; height: 36px !important; display: flex !important; align-items: center !important; justify-content: center !important; transition: color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease !important; }
-.activitybar .monaco-action-bar .action-item:hover > a.action-label { background: rgba(${accentRgb},0.10) !important; color: ${accent} !important; transform: scale(1.08) !important; }
-.activitybar .monaco-action-bar .action-item.checked > a.action-label { background: rgba(${accentRgb},0.16) !important; color: ${accent} !important; animation: u-glow 2.5s ease-in-out infinite !important; }
+.activitybar .monaco-action-bar .action-item { margin: 3px 0 !important; border-radius: 10px !important; transition: background 0.2s ease !important; }
+.activitybar .monaco-action-bar .action-item > a.action-label { border-radius: 10px !important; display: flex !important; align-items: center !important; justify-content: center !important; transition: color 0.2s ease, background 0.2s ease, box-shadow 0.3s ease, filter 0.3s ease !important; }
+.activitybar .monaco-action-bar .action-item:hover > a.action-label { background: rgba(${accentRgb},0.10) !important; color: ${accent} !important; filter: drop-shadow(0 0 5px rgba(${accentRgb},0.25)) !important; }
+.activitybar .monaco-action-bar .action-item.checked > a.action-label { background: linear-gradient(180deg, rgba(${accentRgb},0.18), rgba(${accentRgb},0.08)) !important; color: ${accent} !important; border-radius: 10px !important; box-shadow: inset 0 1px 0 0 rgba(${accentRgb},0.20), inset 0 -1px 0 0 rgba(${accentRgb},0.05), 0 0 12px rgba(${accentRgb},0.12) !important; }
 .activitybar .monaco-action-bar .badge .badge-content { background: ${accent} !important; color: #07090c !important; border-radius: 10px !important; font-weight: 700 !important; font-size: 10px !important; }
 
 /* ── Sidebar ── */

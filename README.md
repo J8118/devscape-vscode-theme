@@ -48,7 +48,7 @@ chmod +x scripts/install.sh
 3. **Ctrl+Shift+P** and run **Devscape: Apply Background & UI**
 4. Click **Reload Now** when prompted
 
-> **Note:** VS Code must be run as Administrator (Windows) or with sudo (macOS/Linux) for background injection to work.
+> **Important:** Do not uninstall Devscape through VS Code's Extensions panel. Use the [uninstall script](INSTALL-GUIDE.md#uninstall) instead. See the [Install Guide](INSTALL-GUIDE.md) for details on why.
 
 ## Settings
 
@@ -68,7 +68,7 @@ chmod +x scripts/install.sh
 ## Troubleshooting
 
 **"Cannot write to workbench files"**
-Run VS Code as Administrator (Windows) or with `sudo code` (macOS/Linux).
+Try running VS Code as Administrator (Windows) or with `sudo code` (macOS/Linux). Most installations do not require this.
 
 **VS Code shows "Your Code installation appears to be corrupt"**
 This is expected after any extension modifies VS Code's internal files. Click the gear icon on the notification and select **"Don't Show Again"**. This is the same behavior as [Custom CSS and JS Loader](https://marketplace.visualstudio.com/items?itemName=be5invis.vscode-custom-css) (1M+ installs).
