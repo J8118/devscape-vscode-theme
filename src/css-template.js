@@ -33,9 +33,8 @@ function buildCss(config) {
 .monaco-list .monaco-list-row { border-radius: 6px !important; transition: background 0.15s ease !important; }
 
 /* ── Tabs ── */
-.tabs-and-actions-container { padding: 5px 8px 0 !important; gap: 2px !important; }
-.tab { border-radius: 8px 8px 0 0 !important; border: none !important; border-top: 2px solid transparent !important; margin: 0 2px !important; padding: 0 14px !important; transition: all 0.2s cubic-bezier(0.4,0,0.2,1) !important; animation: u-fade-in 0.2s ease !important; backdrop-filter: blur(8px) !important; }
-.tab.active { border-top-color: ${accent} !important; background: rgba(${accentRgb},0.06) !important; box-shadow: 0 -3px 14px rgba(${accentRgb},0.12), inset 0 1px 0 rgba(${accentRgb},0.1) !important; }
+.tab { border: none !important; border-top: 2px solid transparent !important; padding: 0 14px !important; transition: all 0.2s cubic-bezier(0.4,0,0.2,1) !important; animation: u-fade-in 0.2s ease !important; }
+.tab.active { border-top-color: ${accent} !important; background: rgba(${accentRgb},0.06) !important; }
 .tab:not(.active):hover { background: rgba(255,255,255,0.04) !important; }
 .tab .tab-actions .codicon-close { opacity: 0 !important; transition: opacity 0.2s !important; }
 .tab:hover .tab-actions .codicon-close, .tab.active .tab-actions .codicon-close { opacity: 0.4 !important; }
