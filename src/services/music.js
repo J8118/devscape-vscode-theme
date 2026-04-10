@@ -109,6 +109,32 @@ class MusicService {
         });
     }
 
+    control(action) {
+        const cmd = this._getControlCommand(action);
+        if (!cmd) return;
+        exec(cmd, { timeout: 3000 }, () => {});
+    }
+
+    _getControlCommand(action) {
+        switch (this._platform) {
+            case 'win32':
+                // Virtual key codes: PlayPause=0xB3, Next=0xB0, Prev=0xB1
+                const vk = { playPause: '0xB3', next: '0xB0', previous: '0xB1' }[action];
+                if (!vk) return null;
+                return `powershell -Command "Add-Type -TypeDefinition 'using System;using System.Runtime.InteropServices;public class KBD{[DllImport(\\\"user32.dll\\\")]public static extern void keybd_event(byte k,byte s,uint f,UIntPtr e);}'; [KBD]::keybd_event(${vk},0,0,[UIntPtr]::Zero); [KBD]::keybd_event(${vk},0,2,[UIntPtr]::Zero)"`;
+            case 'darwin':
+                const appleCmd = { playPause: 'playpause', next: 'next track', previous: 'previous track' }[action];
+                if (!appleCmd) return null;
+                return `osascript -e 'tell application "Spotify" to ${appleCmd}'`;
+            case 'linux':
+                const dbusCmd = { playPause: 'PlayPause', next: 'Next', previous: 'Previous' }[action];
+                if (!dbusCmd) return null;
+                return `dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.${dbusCmd}`;
+            default:
+                return null;
+        }
+    }
+
     _parseDbusOutput(output) {
         let artist = '';
         let track = '';

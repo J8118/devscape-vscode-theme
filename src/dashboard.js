@@ -32,9 +32,19 @@ class DashboardViewProvider {
 
         this._updateWebview();
 
+        webviewView.webview.onDidReceiveMessage((msg) => {
+            if (msg.type === 'control' && this._onControl) {
+                this._onControl(msg.action);
+            }
+        });
+
         webviewView.onDidDispose(() => {
             this._view = undefined;
         });
+    }
+
+    onControl(callback) {
+        this._onControl = callback;
     }
 
     updateWeather(data) {
@@ -102,6 +112,11 @@ class DashboardViewProvider {
                     ${music.artist ? `<div class="sp-artist">${escapeHtml(music.artist)}</div>` : ''}
                 </div>
                 ${isPlaying ? '<div class="pulse"></div>' : ''}
+            </div>
+            <div class="sp-controls">
+                <button class="sp-btn" data-action="previous" title="Previous">\u23EE</button>
+                <button class="sp-btn sp-play" data-action="playPause" title="Play/Pause">${isPlaying ? '\u23F8' : '\u25B6'}</button>
+                <button class="sp-btn" data-action="next" title="Next">\u23ED</button>
             </div>`;
         }
 
@@ -189,6 +204,11 @@ class DashboardViewProvider {
         .sp-artist { font-size: 9.5px; color: ${isPlaying ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.2)'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .pulse { width: 5px; height: 5px; border-radius: 50%; background: ${config.accent}; flex-shrink: 0; animation: pulse 1.5s ease-in-out infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(1.5); } }
+        .sp-controls { display: flex; align-items: center; gap: 2px; margin-top: 5px; padding-left: 24px; }
+        .sp-btn { background: none; border: 1px solid rgba(${config.accentRgb},0.15); color: rgba(${config.accentRgb},0.5); cursor: pointer; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 10px; padding: 0; transition: color 0.2s, border-color 0.2s, background 0.2s, transform 0.15s; line-height: 1; }
+        .sp-btn:hover { color: ${config.accent}; border-color: rgba(${config.accentRgb},0.4); background: rgba(${config.accentRgb},0.08); transform: scale(1.1); }
+        .sp-btn:active { transform: scale(0.95); }
+        .sp-btn.sp-play { width: 26px; height: 26px; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -266,6 +286,9 @@ class DashboardViewProvider {
                     if (trackEl) { trackEl.textContent = d.track; trackEl.style.color = playing ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)'; }
                     if (artistEl) { if (d.artist) { artistEl.textContent = d.artist; artistEl.style.display = ''; } else { artistEl.style.display = 'none'; } }
                     if (pulseEl) pulseEl.style.display = playing ? '' : 'none';
+                    // Update play/pause button icon
+                    const playBtn = document.querySelector('.sp-play');
+                    if (playBtn) playBtn.textContent = playing ? '\u23F8' : '\u25B6';
                 }
             }
             if (msg.type === 'weather') {
@@ -279,6 +302,14 @@ class DashboardViewProvider {
                     }
                 }
             }
+        });
+
+        // Music control buttons
+        const vscode = acquireVsCodeApi();
+        document.querySelectorAll('.sp-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                vscode.postMessage({ type: 'control', action: btn.dataset.action });
+            });
         });
 
         setInterval(updateDateTime, 1000);

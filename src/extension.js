@@ -53,6 +53,13 @@ function activate(context) {
             if (dashboardProvider) dashboardProvider.updateMusic(data);
         });
         musicService.start();
+
+        // Route playback controls from dashboard to music service
+        if (dashboardProvider) {
+            dashboardProvider.onControl((action) => {
+                if (musicService) musicService.control(action);
+            });
+        }
     }
 
     function stopServices() {
