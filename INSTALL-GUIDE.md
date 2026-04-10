@@ -102,14 +102,29 @@ Restart VS Code. Your editor will be fully restored to its default state with no
 
 ## Updating Devscape
 
-To update to a new version:
+To update to a new version, you must do a full uninstall → reinstall cycle. Simply re-applying the background will **not** pick up code changes — the old extension files remain cached by VS Code.
 
-1. Pull the latest changes: `git pull`
-2. Run the install script again — it will overwrite the previous version
+### Windows
 
-You do **not** need to uninstall first. The install script handles upgrades.
+```powershell
+cd devscape-vscode-theme
+.\scripts\uninstall.ps1
+# Restart VS Code, then:
+git pull
+.\scripts\install.ps1
+```
 
-After updating, run **Devscape: Apply Background & UI** again to re-inject the latest CSS.
+### macOS / Linux
+
+```bash
+cd devscape-vscode-theme
+./scripts/uninstall.sh
+# Restart VS Code, then:
+git pull
+./scripts/install.sh
+```
+
+After reinstalling, select the theme and run **Devscape: Apply Background & UI** to inject the latest CSS.
 
 ---
 
