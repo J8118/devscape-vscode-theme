@@ -6,6 +6,8 @@ Devscape goes beyond colors — it transforms your entire editor with custom UI 
 
 https://github.com/J8118/devscape-vscode-theme/raw/master/media/preview/Arctic-Sands-Ex.mp4
 
+*Press play to see the full experience.*
+
 ## Features
 
 - **Custom UI styling** — Activity bar, tabs, sidebar, command palette, context menus, hover widgets, and more — all themed with glow effects and smooth animations
