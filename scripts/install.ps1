@@ -1,4 +1,4 @@
-# Devscape — Windows Install Script
+# Devscape -Windows Install Script
 # Run: .\scripts\install.ps1
 
 Write-Host ""
@@ -16,27 +16,7 @@ try {
     exit 1
 }
 
-# ── Step 2: Find VS Code CLI ─────────────────────────────────────────────
-# code.cmd is the reliable CLI on Windows — find it explicitly
-$codeCli = $null
-$tryPaths = @(
-    "$env:LOCALAPPDATA\Programs\Microsoft VS Code\bin\code.cmd",
-    "$env:ProgramFiles\Microsoft VS Code\bin\code.cmd",
-    "${env:ProgramFiles(x86)}\Microsoft VS Code\bin\code.cmd"
-)
-foreach ($p in $tryPaths) {
-    if (Test-Path $p) { $codeCli = $p; break }
-}
-
-if (-not $codeCli) {
-    Write-Host "  [ERROR] VS Code not found." -ForegroundColor Red
-    Write-Host "  Install from: https://code.visualstudio.com" -ForegroundColor Yellow
-    exit 1
-}
-$codeVersion = & $codeCli --version 2>&1 | Select-Object -First 1
-Write-Host "  [OK] VS Code $codeVersion" -ForegroundColor Green
-
-# ── Step 3: Install vsce if needed ───────────────────────────────────────
+# ── Step 2: Install vsce if needed ───────────────────────────────────────
 $vsceCheck = & npm list -g @vscode/vsce 2>&1
 if ($LASTEXITCODE -ne 0) {
     Write-Host "  Installing @vscode/vsce..." -ForegroundColor Yellow
@@ -44,11 +24,10 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Host "  [OK] @vscode/vsce" -ForegroundColor Green
 
-# ── Step 4: Package ──────────────────────────────────────────────────────
+# ── Step 3: Package ──────────────────────────────────────────────────────
 Write-Host ""
 Write-Host "  Packaging extension..." -ForegroundColor Yellow
 
-# Navigate to project root (parent of scripts/)
 Push-Location (Split-Path $PSScriptRoot)
 
 & vsce package --out devscape-vscode-theme.vsix 2>&1 | Out-Null
@@ -59,32 +38,113 @@ if (-not (Test-Path "devscape-vscode-theme.vsix")) {
 }
 Write-Host "  [OK] Package created" -ForegroundColor Green
 
-# ── Step 5: Uninstall previous version (if exists) ───────────────────────
+# ── Step 4: Remove previous install ─────────────────────────────────────
 Write-Host "  Removing previous version (if any)..." -ForegroundColor Yellow
-& $codeCli --uninstall-extension J8118.devscape-vscode-theme 2>&1 | Out-Null
 
-# Also force-remove the folder in case CLI didn't clean it
 $extDir = Join-Path $env:USERPROFILE ".vscode\extensions"
-Get-ChildItem $extDir -Directory -Filter "*devscape*" -ErrorAction SilentlyContinue | ForEach-Object {
-    Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
+if (-not (Test-Path $extDir)) {
+    New-Item -ItemType Directory -Path $extDir -Force | Out-Null
 }
 
-# ── Step 6: Install ─────────────────────────────────────────────────────
+# Remove any existing devscape folders (including .BROKEN)
+Get-ChildItem $extDir -Directory -Filter "*devscape*" -ErrorAction SilentlyContinue | ForEach-Object {
+    Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
+    Write-Host "        Removed $($_.Name)" -ForegroundColor Gray
+}
+
+# Remove from extensions.json registry
+$registryFile = Join-Path $extDir "extensions.json"
+if (Test-Path $registryFile) {
+    try {
+        $json = Get-Content $registryFile -Raw | ConvertFrom-Json
+        $json = $json | Where-Object { $_.identifier.id -notlike "*devscape*" }
+        $json | ConvertTo-Json -Depth 10 -Compress | Set-Content $registryFile -NoNewline
+    } catch {}
+}
+
+Write-Host "  [OK] Clean slate" -ForegroundColor Green
+
+# ── Step 5: Extract .vsix directly to extensions folder ──────────────────
 Write-Host "  Installing extension..." -ForegroundColor Yellow
-$installOutput = & $codeCli --install-extension devscape-vscode-theme.vsix --force 2>&1
-Write-Host "        $installOutput"
 
-# ── Step 7: Verify installation ─────────────────────────────────────────
+$targetDir = Join-Path $extDir "j8118.devscape-vscode-theme-1.0.0"
+New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
+
+# .vsix is a zip -extract the extension/ subfolder
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$zip = [System.IO.Compression.ZipFile]::OpenRead((Resolve-Path "devscape-vscode-theme.vsix"))
+foreach ($entry in $zip.Entries) {
+    # Only extract files under extension/ (skip [Content_Types].xml etc.)
+    if ($entry.FullName.StartsWith("extension/") -and $entry.FullName -ne "extension/") {
+        $relativePath = $entry.FullName.Substring("extension/".Length)
+        $destPath = Join-Path $targetDir $relativePath
+
+        if ($entry.FullName.EndsWith("/")) {
+            # Directory entry
+            New-Item -ItemType Directory -Path $destPath -Force | Out-Null
+        } else {
+            # File entry
+            $parentDir = Split-Path $destPath
+            if (-not (Test-Path $parentDir)) {
+                New-Item -ItemType Directory -Path $parentDir -Force | Out-Null
+            }
+            $stream = $entry.Open()
+            $fileStream = [System.IO.File]::Create($destPath)
+            $stream.CopyTo($fileStream)
+            $fileStream.Close()
+            $stream.Close()
+        }
+    }
+}
+$zip.Dispose()
+
+Write-Host "  [OK] Files extracted" -ForegroundColor Green
+
+# ── Step 6: Register in extensions.json ──────────────────────────────────
+Write-Host "  Registering extension..." -ForegroundColor Yellow
+
+$registryFile = Join-Path $extDir "extensions.json"
+$registry = @()
+if (Test-Path $registryFile) {
+    try { $registry = Get-Content $registryFile -Raw | ConvertFrom-Json } catch { $registry = @() }
+}
+
+# Ensure it's an array
+if ($registry -isnot [System.Array]) { $registry = @($registry) }
+
+$newEntry = @{
+    identifier = @{ id = "j8118.devscape-vscode-theme" }
+    version = "1.0.0"
+    location = @{
+        '$mid' = 1
+        path = "/c:/Users/$($env:USERNAME)/.vscode/extensions/j8118.devscape-vscode-theme-1.0.0"
+        scheme = "file"
+    }
+    relativeLocation = "j8118.devscape-vscode-theme-1.0.0"
+    metadata = @{
+        installedTimestamp = [long](Get-Date -UFormat %s) * 1000
+        pinned = $false
+        source = "vsix"
+    }
+}
+
+$registry += $newEntry
+$registry | ConvertTo-Json -Depth 10 -Compress | Set-Content $registryFile -NoNewline
+
+Write-Host "  [OK] Extension registered" -ForegroundColor Green
+
+# ── Step 7: Verify ──────────────────────────────────────────────────────
 Write-Host "  Verifying installation..." -ForegroundColor Yellow
-$installed = Get-ChildItem $extDir -Directory -Filter "*devscape*" -ErrorAction SilentlyContinue
 
-if ($installed) {
-    Write-Host "  [OK] Extension installed at: $($installed.Name)" -ForegroundColor Green
+$hasFolder = Test-Path (Join-Path $targetDir "package.json")
+$hasEntry = (Get-Content $registryFile -Raw) -match "devscape"
+
+if ($hasFolder -and $hasEntry) {
+    Write-Host "  [OK] Verified -folder and registry entry present" -ForegroundColor Green
 } else {
-    Write-Host "  [ERROR] Extension folder not found after install." -ForegroundColor Red
-    Write-Host "  The .vsix file has been kept for manual install:" -ForegroundColor Yellow
-    Write-Host "  Open VS Code > Extensions > ... > Install from VSIX" -ForegroundColor Yellow
-    Write-Host "  File: $(Resolve-Path devscape-vscode-theme.vsix)" -ForegroundColor Yellow
+    Write-Host "  [ERROR] Verification failed." -ForegroundColor Red
+    if (-not $hasFolder) { Write-Host "        Missing: extension folder" -ForegroundColor Red }
+    if (-not $hasEntry) { Write-Host "        Missing: registry entry" -ForegroundColor Red }
     Pop-Location
     exit 1
 }
@@ -100,7 +160,7 @@ Write-Host "  Devscape installed successfully!" -ForegroundColor Green
 Write-Host "  ========================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  Next steps:" -ForegroundColor White
-Write-Host "    1. Reload VS Code (Ctrl+Shift+P > 'Reload Window')"
+Write-Host "    1. Restart VS Code (close and reopen)"
 Write-Host "    2. Ctrl+K Ctrl+T -> select 'Arctic Sands'"
 Write-Host "    3. Ctrl+Shift+P -> 'Devscape: Apply Background & UI'"
 Write-Host ""
